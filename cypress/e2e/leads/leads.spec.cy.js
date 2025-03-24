@@ -29,7 +29,8 @@ describe('Leads Management Page', () => {
         cy.log('✓ Successfully navigated to Leads page');
     });
 
-    it('should verify leads page is loaded correctly', () => {
+    it('should perform all leads page operations', () => {
+        // Test 1: Verify leads page is loaded correctly
         cy.log('**Test 1: Verifying leads page elements**');
         cy.contains('leads', { matchCase: false }).should('be.visible')
             .then(() => {
@@ -45,9 +46,8 @@ describe('Leads Management Page', () => {
             });
             
         cy.wait(1000);
-    });
 
-    it('should filter leads by date range', () => {
+        // Test 2: Filter leads by date range
         cy.log('**Test 2: Filtering leads by date range**');
         cy.log('Setting date range filters');
         LeadsPage.setDateRange();
@@ -58,22 +58,42 @@ describe('Leads Management Page', () => {
         LeadsPage.applyFilters();
         cy.wait(2000);
         cy.log('✓ Date range filters applied successfully');
-    });
-
-    it('should filter by assigned member', () => {
-        cy.log('**Test 3: Filtering by assigned member**');
-        cy.log('Selecting "All Members" from dropdown');
-        LeadsPage.selectAssignedMember('All Members');
-        cy.wait(1500);
-        cy.log('✓ Member selection completed');
         
-        cy.log('Applying filters');
-        LeadsPage.applyFilters();
-        cy.wait(2000);
-        cy.log('✓ Member filter applied successfully');
-    });
+        // Scroll to show results
+        cy.get('table').scrollIntoView({ duration: 1000 });
+        cy.wait(1000);
 
-    it('should search by customer name', () => {
+        // Test 3: Filter by assigned member - Random specific member
+        cy.log('**Test 3: Filtering by assigned member**');
+        cy.log('Selecting a random member from dropdown');
+        
+        // Get a random member from the dropdown using the correct selector
+        cy.get('.member-filter select').then($select => {
+            // Get all options
+            const $options = $select.find('option');
+            // Get a random index
+            const randomIndex = Math.floor(Math.random() * $options.length);
+            // Get the value and text of the random option
+            const randomValue = $options.eq(randomIndex).val();
+            const randomText = $options.eq(randomIndex).text();
+            
+            // Select the random member
+            cy.get('.member-filter select').select(randomValue);
+            cy.log(`✓ Selected member: "${randomText}"`);
+            
+            cy.wait(1500);
+            
+            cy.log('Applying filters');
+            LeadsPage.applyFilters();
+            cy.wait(2000);
+            cy.log('✓ Member filter applied successfully');
+            
+            // Scroll to show results
+            cy.get('table').scrollIntoView({ duration: 1000 });
+            cy.wait(1000);
+        });
+
+        // Test 4: Search by customer name
         cy.log('**Test 4: Searching by customer name**');
         const customerName = 'Sajood Ur Rehman';
         cy.log(`Entering customer name: "${customerName}"`);
@@ -90,10 +110,12 @@ describe('Leads Management Page', () => {
             .then(() => {
                 cy.log(`✓ Customer "${customerName}" found in results`);
             });
+        
+        // Scroll to show results
+        cy.get('table').scrollIntoView({ duration: 1000 });
         cy.wait(1000);
-    });
 
-    it('should change records per page', () => {
+        // Test 5: Change records per page
         cy.log('**Test 5: Changing records per page**');
         cy.log('Setting records per page to 10');
         LeadsPage.setRecordsPerPage(10);
@@ -106,10 +128,12 @@ describe('Leads Management Page', () => {
             .then((rows) => {
                 cy.log(`✓ Table showing ${rows.length} records (≤ 10) as expected`);
             });
+        
+        // Scroll to show results
+        cy.get('table').scrollIntoView({ duration: 1000 });
         cy.wait(1000);
-    });
 
-    it('should handle recalculate all functionality', () => {
+        // Test 6: Handle recalculate all functionality
         cy.log('**Test 6: Testing recalculate all function**');
         cy.log('Clicking Recalculate All button');
         LeadsPage.recalculateAll();
@@ -118,9 +142,12 @@ describe('Leads Management Page', () => {
         // Add longer wait for recalculation
         cy.wait(3000);
         cy.log('✓ Recalculation process completed');
-    });
+        
+        // Scroll to show results
+        cy.get('table').scrollIntoView({ duration: 1000 });
+        cy.wait(1000);
 
-    it('should handle invalid date ranges', () => {
+        // Test 7: Handle invalid date ranges
         cy.log('**Test 7: Handling invalid date input**');
         cy.log('Attempting to set invalid date range');
         
@@ -134,6 +161,10 @@ describe('Leads Management Page', () => {
         LeadsPage.applyFilters();
         cy.wait(2000);
         cy.log('✓ Filters applied with date range');
+        
+        // Scroll to show results
+        cy.get('table').scrollIntoView({ duration: 1000 });
+        cy.wait(1000);
     });
 
     after(() => {
