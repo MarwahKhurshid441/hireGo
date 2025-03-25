@@ -47,6 +47,48 @@ class LeadPage {
                 });
             });
     }
+
+    // Test 4 (continued): Search by Inquiry ID
+    searchByInquiryId() {
+        cy.log('**Test 4 (continued): Searching by Inquiry ID**');
+
+        // Get an Inquiry ID directly from the table
+        cy.get('table tbody tr').first().then($row => {
+            // Assuming Inquiry ID is in the second column (index 1)
+            const inquiryIdCell = $row.find('td').eq(1);
+            if (inquiryIdCell.length > 0) {
+                const inquiryId = inquiryIdCell.text().trim();
+                
+                if (inquiryId) {
+                    cy.log(`Using Inquiry ID from table: ${inquiryId}`);
+                    
+                    // Clear previous filters
+                    cy.get('.search-filter input').clear();
+                    LeadsPage.searchCustomer('');
+                    
+                    // Enter the inquiry ID
+                    cy.get('.search-filter input').type(inquiryId);
+                    cy.log('✓ Inquiry ID entered');
+                    
+                    cy.wait(1500);
+                    
+                    cy.log('Applying filters');
+                    LeadsPage.applyFilters();
+                    cy.wait(2000);
+                    
+                    // Verify results contain the inquiry ID
+                    cy.contains(inquiryId, { timeout: 10000 }).should('be.visible')
+                        .then(() => {
+                            cy.log(`✓ Inquiry ID "${inquiryId}" found in results`);
+                        });
+                    
+                    // Scroll to show results
+                    cy.get('table').scrollIntoView({ duration: 1000 });
+                    cy.wait(1000);
+                }
+            }
+        });
+    }
 }
 
 export default new LeadPage(); 

@@ -58,7 +58,7 @@ class LeadsPage {
         cy.visit('http://54.186.118.166:5000/leads', { timeout: 10000 });
         
         // Wait for the page to be fully loaded
-        cy.contains('Leads', { timeout: 10000 }).should('be.visible');
+        cy.contains('leads', { timeout: 10000 }).should('be.visible');
         
         cy.log('From Date:' + dates.from);
         cy.log('To Date:'+ dates.to);
