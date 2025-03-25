@@ -62,6 +62,80 @@ describe('Leads Management Page', () => {
         // Scroll to show results
         cy.get('table').scrollIntoView({ duration: 1000 });
         cy.wait(1000);
+        
+        // Test 2 (continued): Test pagination
+        cy.log('**Test 2 (continued): Testing pagination**');
+
+        // First, scroll to the pagination section
+        cy.get('.pagination').scrollIntoView({ duration: 1000 });
+        cy.wait(1000);
+
+        // Check if there are multiple pages available
+        cy.get('.pagination .page-numbers button').then($buttons => {
+            if ($buttons.length > 1) {
+                // If there are multiple pages, click on page 2
+                cy.get('.pagination .page-numbers button').eq(1).click();
+                cy.wait(2000);
+                cy.log('✓ Navigated to page 2');
+            } else {
+                cy.log('Only one page available, staying on page 1');
+            }
+            
+            // Scroll to show results on the current page
+            cy.get('table').scrollIntoView({ duration: 1000 });
+            cy.wait(1000);
+            
+            // Test 2 (continued): View lead details and return
+            cy.log('**Test 2 (continued): Viewing lead details**');
+            
+            // Get the lead ID from the first row of the table
+            cy.get('table tbody tr').first().then($row => {
+                // Get the ID from the first column (assuming that's where the ID is)
+                const leadId = $row.find('td').first().text().trim();
+                cy.log(`Found lead ID: ${leadId}`);
+                
+                // Find the View button and get its href attribute
+                cy.contains('View').first().then($viewBtn => {
+                    // Get the href attribute
+                    const href = $viewBtn.attr('href');
+                    cy.log(`View button href: ${href}`);
+                    
+                    if (href && href.includes('/leads/')) {
+                        // If we have a valid href, visit it directly
+                        cy.visit(`http://54.186.118.166:5000${href}`);
+                    } else {
+                        // Otherwise try to click it with target removed
+                        cy.contains('View').first()
+                            .invoke('removeAttr', 'target')
+                            .click({force: true});
+                    }
+                    
+                    cy.wait(3000);
+                    cy.log('✓ Navigated to lead details page');
+                    
+                    // Verify we're on a details page by checking for specific content
+                    cy.contains('Inquiry ID', {timeout: 10000}).should('exist');
+                    cy.contains('Customer Name', {timeout: 10000}).should('exist');
+                    cy.log('✓ Verified lead details content');
+                    
+                    // Scroll through the lead details
+                    cy.scrollTo('bottom', { duration: 1000 });
+                    cy.wait(1000);
+                    cy.scrollTo('top', { duration: 1000 });
+                    cy.wait(1000);
+                    cy.log('✓ Viewed lead details');
+                    
+                    // Go back to the leads page
+                    cy.visit('http://54.186.118.166:5000/leads');
+                    cy.wait(2000);
+                    cy.log('✓ Returned to leads page');
+                    
+                    // Scroll to show the table again
+                    cy.get('table').scrollIntoView({ duration: 1000 });
+                    cy.wait(1000);
+                });
+            });
+        });
 
         // Test 3: Filter by assigned member - Random specific member
         cy.log('**Test 3: Filtering by assigned member**');
@@ -114,6 +188,71 @@ describe('Leads Management Page', () => {
         // Scroll to show results
         cy.get('table').scrollIntoView({ duration: 1000 });
         cy.wait(1000);
+
+        // Test 4 (continued): Search by Inquiry ID
+        cy.log('**Test 4 (continued): Searching by Inquiry ID**');
+
+        // Note: We're keeping the customer name filter active
+        // LeadsPage.searchCustomer(''); // Commented out to preserve customer name filter
+
+        // Use the specific Inquiry ID
+        const inquiryId = "QRL-355";
+        cy.log(`Using Inquiry ID: ${inquiryId}`);
+
+        // Enter the inquiry ID in the search filter input - using a more specific selector
+        cy.get('.search-filter input[placeholder="Search by inquiry ID"]').type(inquiryId);
+        cy.log('✓ Inquiry ID entered');
+
+        cy.wait(1500);
+
+        cy.log('Applying filters');
+        LeadsPage.applyFilters();
+        cy.wait(2000);
+
+        // Scroll to show results
+        cy.get('table').scrollIntoView({ duration: 1000 });
+        cy.wait(1000);
+
+        // Clear the Inquiry ID filter before moving to the next test
+        cy.get('.search-filter input[placeholder="Search by inquiry ID"]').clear();
+        cy.wait(500);
+        cy.log('✓ Cleared Inquiry ID filter');
+
+        // Test 4 (continued): Filter by Live Rate
+        cy.log('**Test 4 (continued): Filtering by Live Rate**');
+
+        // Find the Live Rate dropdown using the correct selector
+        cy.get('.live-rate-filter select')
+          .then($select => {
+            // Get all options
+            const $options = $select.find('option');
+            
+            if ($options.length > 0) {
+              // Get a random index (including the first option)
+              const randomIndex = Math.floor(Math.random() * $options.length);
+              
+              // Get the value and text of the random option
+              const randomValue = $options.eq(randomIndex).val();
+              const randomText = $options.eq(randomIndex).text();
+              
+              // Select the random option
+              cy.get('.live-rate-filter select').select(randomValue);
+              
+              cy.log(`✓ Selected Live Rate option: "${randomText}"`);
+              
+              cy.wait(1500);
+              
+              cy.log('Applying filters');
+              LeadsPage.applyFilters();
+              cy.wait(2000);
+              
+              // Scroll to show results
+              cy.get('table').scrollIntoView({ duration: 1000 });
+              cy.wait(1000);
+            } else {
+              cy.log('No Live Rate options available to select');
+            }
+          });
 
         // Test 5: Change records per page
         cy.log('**Test 5: Changing records per page**');
